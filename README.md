@@ -1,18 +1,22 @@
 # Customer Success Balancing
 
-## Versão mínima
-- Go 1.16
+### Versão mínima
+- Go 1.17
 
 
-##  Terminal
+### Instalando as dependências
 
-### Rodando a aplicação
+Se necessário, no terminal, executar os seguintes comandos:
 
 ```bash
-go run csbalancing.go
+cd tests
+go mod tidy
 ```
 
+
 ### Rodando os testes
+
+Uma vez que todas as dependência estejam baixadas, execute o seguinte comando:
 
 ```bash
 go test

@@ -1,10 +1,9 @@
 package csbalancing_test
 
 import (
+	csbalancing "rogerdenisvieira/customer-success-balancing/domain" // this package is actually pointing to the local one
 	"testing"
 	"time"
-
-	csbalancing "github.com/rogerdenisvieira/customer-success-balancing"
 )
 
 func TestCustomerSuccessBalancing(t *testing.T) {
