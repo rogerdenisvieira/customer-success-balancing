@@ -39,8 +39,13 @@ func CustomerSuccessBalancing(customerSuccess []Entity, customers []Entity, cust
 	availableCustomerSuccessByScore := FindAvailableCustomerSuccess(customerSuccessByScore, customerSuccessAway)
 
 	for _, customer := range customersByScore {
-		for _, availabeCustomerSuccess := range availableCustomerSuccessByScore {
-			if customer.Score <= availabeCustomerSuccess.Score {
+		for availabeCustomerSuccessIndex, availabeCustomerSuccess := range availableCustomerSuccessByScore {
+
+			if customer.Score <= availabeCustomerSuccess.Score && availabeCustomerSuccessIndex == len(availableCustomerSuccessByScore)-1 {
+				customersByCustomerSuccess[availabeCustomerSuccess.ID]++
+			}
+
+			if customer.Score <= availabeCustomerSuccess.Score && customer.Score > availableCustomerSuccessByScore[availabeCustomerSuccessIndex+1].Score {
 				customersByCustomerSuccess[availabeCustomerSuccess.ID]++
 			}
 		}
