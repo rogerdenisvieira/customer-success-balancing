@@ -30,7 +30,6 @@ func CustomerSuccessBalancing(customerSuccess []Entity, customers []Entity, cust
 	}
 
 	for _, customer := range customersByScore {
-
 		suitableCS, error := FindSuitableCS(availableCSSByScore, customer, customerSuccessAway)
 
 		if error == nil {
@@ -78,7 +77,6 @@ func FindBusiestCustomerSuccess(customersByCustomerSuccess map[int]int) int {
 			greatestCustomersQuantity = customersQuantity
 			busiestCustomerID = customerSuccessID
 		}
-
 	}
 
 	return busiestCustomerID
@@ -98,13 +96,12 @@ func FindAvailableCustomerSuccess(customerSuccess []Entity, customerSuccessAwayI
 		if !ContainsInt(customerSuccessToBeChecked.ID, customerSuccessAwayIDs) {
 			availableCustomerSuccess = append(availableCustomerSuccess, customerSuccessToBeChecked)
 		}
-
 	}
 
 	return availableCustomerSuccess
 }
 
-//ContainsInt checks whether a array of integers contains a given int
+//ContainsInt checks whether an array of integers contains a given int
 func ContainsInt(number int, numbers []int) bool {
 	for _, currentNumber := range numbers {
 
