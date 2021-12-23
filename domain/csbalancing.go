@@ -11,39 +11,27 @@ type Entity struct {
 	Score int
 }
 
-/*
-Todos os CSs têm níveis diferentes
-Não há limite de clientes por CS
-Clientes podem ficar sem serem atendidos
-Clientes podem ter o mesmo tamanho
-0 < n < 1.000
-0 < m < 1.000.000
-0 < id do cs < 1.000
-0 < id do cliente < 1.000.000
-0 < nível do cs < 10.000
-0 < tamanho do cliente < 100.000
-Valor máximo de t = n/2 arredondado para baixo
-*/
-
 // CustomerSuccessBalancing retrieves the customer success' ID with most customers
 func CustomerSuccessBalancing(customerSuccess []Entity, customers []Entity, customerSuccessAway []int) int {
-	// Write your solution here
-
-	// fmt.Println(customerSuccess)
-	// fmt.Println(customers)
 
 	var notAttendedCustomers []Entity
 	var customersByCustomerSuccess = make(map[int]int) // [CustomerSuccessID]CustomerQuantity
 	cssByScore := SortEntitiesByScoreDesc(customerSuccess)
 	customersByScore := SortEntitiesByScoreDesc(customers)
 
+	availableCSSByScore := FindAvailableCustomerSuccess(customerSuccess, customerSuccessAway)
+
 	if len(cssByScore) == 0 { // early return: no customers
+		return 0
+	}
+
+	if len(availableCSSByScore) == 0 { // early return: no available customer success
 		return 0
 	}
 
 	for _, customer := range customersByScore {
 
-		suitableCS, error := FindSuitableCS(cssByScore, customer, customerSuccessAway)
+		suitableCS, error := FindSuitableCS(availableCSSByScore, customer, customerSuccessAway)
 
 		if error == nil {
 			customersByCustomerSuccess[suitableCS.ID]++
@@ -56,16 +44,10 @@ func CustomerSuccessBalancing(customerSuccess []Entity, customers []Entity, cust
 }
 
 // FindSuitableCS given a list of CSs and a customer, retrieve the most suitable Cs to attend the customer
-func FindSuitableCS(customerSuccess []Entity, customer Entity, customerSuccessAway []int) (Entity, error) {
+func FindSuitableCS(availableCSSByScore []Entity, customer Entity, customerSuccessAway []int) (Entity, error) {
 
 	var suitableCS Entity
 	var errorsFound error
-
-	availableCSSByScore := FindAvailableCustomerSuccess(customerSuccess, customerSuccessAway)
-
-	if len(availableCSSByScore) == 0 { // early return: no CS available
-		return suitableCS, errors.New("No CustomerSuccess available was found")
-	}
 
 	for availableCSSIndex, availableCS := range availableCSSByScore {
 
@@ -85,7 +67,6 @@ func FindSuitableCS(customerSuccess []Entity, customer Entity, customerSuccessAw
 
 }
 
-// O(n)
 // FindBusiestCustomerSuccess finds the ID of the CustomerSuccess with most customers
 func FindBusiestCustomerSuccess(customersByCustomerSuccess map[int]int) int {
 	greatestCustomersQuantity := 0
