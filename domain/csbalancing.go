@@ -51,9 +51,6 @@ func FindSuitableCS(availableCSSByScore []Entity, customer Entity, customerSucce
 
 	for availableCSSIndex, availableCS := range availableCSSByScore {
 
-		// formattedText := fmt.Sprintf("CustomerScore: %d, CustomerSuccessScore: %d,  CustomerSuccessIndex: %d", customer.Score, availableCS.Score, availableCSSIndex)
-		// fmt.Println(formattedText)
-
 		if customer.Score > availableCS.Score && availableCSSIndex == 0 { // customer score greater than greatest CS score
 			return suitableCS, errors.New("No suitable CustomerSuccess was found")
 		} else if customer.Score <= availableCS.Score && availableCSSIndex == len(availableCSSByScore)-1 { // customer score less than or equals to last CS score
