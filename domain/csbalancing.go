@@ -1,7 +1,7 @@
 package csbalancing
 
 import (
-	"fmt"
+	"errors"
 	"sort"
 )
 
@@ -32,41 +32,75 @@ func CustomerSuccessBalancing(customerSuccess []Entity, customers []Entity, cust
 	// fmt.Println(customerSuccess)
 	// fmt.Println(customers)
 
+	var notAttendedCustomers []Entity
 	var customersByCustomerSuccess = make(map[int]int) // [CustomerSuccessID]CustomerQuantity
-	customerSuccessByScore := SortEntitiesByScoreDesc(customerSuccess)
+	cssByScore := SortEntitiesByScoreDesc(customerSuccess)
 	customersByScore := SortEntitiesByScoreDesc(customers)
 
-	availableCustomerSuccessByScore := FindAvailableCustomerSuccess(customerSuccessByScore, customerSuccessAway)
-
-	for _, customer := range customersByScore {
-		for availabeCustomerSuccessIndex, availabeCustomerSuccess := range availableCustomerSuccessByScore {
-
-			if customer.Score <= availabeCustomerSuccess.Score && availabeCustomerSuccessIndex == len(availableCustomerSuccessByScore)-1 {
-				customersByCustomerSuccess[availabeCustomerSuccess.ID]++
-			}
-
-			if customer.Score <= availabeCustomerSuccess.Score && customer.Score > availableCustomerSuccessByScore[availabeCustomerSuccessIndex+1].Score {
-				customersByCustomerSuccess[availabeCustomerSuccess.ID]++
-			}
-		}
+	if len(cssByScore) == 0 { // early return: no customers
+		return 0
 	}
 
-	fmt.Println(customersByCustomerSuccess)
+	for _, customer := range customersByScore {
+
+		suitableCS, error := FindSuitableCS(cssByScore, customer, customerSuccessAway)
+
+		if error == nil {
+			customersByCustomerSuccess[suitableCS.ID]++
+		} else {
+			notAttendedCustomers = append(notAttendedCustomers, customer)
+		}
+	}
 
 	return FindBusiestCustomerSuccess(customersByCustomerSuccess)
 }
 
-// O(m*n)
+// FindSuitableCS given a list of CSs and a customer, retrieve the most suitable Cs to attend the customer
+func FindSuitableCS(customerSuccess []Entity, customer Entity, customerSuccessAway []int) (Entity, error) {
+
+	var suitableCS Entity
+	var errorsFound error
+
+	availableCSSByScore := FindAvailableCustomerSuccess(customerSuccess, customerSuccessAway)
+
+	if len(availableCSSByScore) == 0 { // early return: no CS available
+		return suitableCS, errors.New("No CustomerSuccess available was found")
+	}
+
+	for availableCSSIndex, availableCS := range availableCSSByScore {
+
+		// formattedText := fmt.Sprintf("CustomerScore: %d, CustomerSuccessScore: %d,  CustomerSuccessIndex: %d", customer.Score, availableCS.Score, availableCSSIndex)
+		// fmt.Println(formattedText)
+
+		if customer.Score > availableCS.Score && availableCSSIndex == 0 { // customer score greater than greatest CS score
+			return suitableCS, errors.New("No suitable CustomerSuccess was found")
+		} else if customer.Score <= availableCS.Score && availableCSSIndex == len(availableCSSByScore)-1 { // customer score less than or equals to last CS score
+			return availableCS, nil
+		} else if customer.Score <= availableCS.Score && customer.Score > availableCSSByScore[availableCSSIndex+1].Score { // customer score between current and next CS score
+			return availableCS, nil
+		}
+	}
+
+	return suitableCS, errorsFound
+
+}
+
+// O(n)
 // FindBusiestCustomerSuccess finds the ID of the CustomerSuccess with most customers
 func FindBusiestCustomerSuccess(customersByCustomerSuccess map[int]int) int {
 	greatestCustomersQuantity := 0
 	busiestCustomerID := 0
 
 	for customerSuccessID, customersQuantity := range customersByCustomerSuccess {
-		if customersQuantity > greatestCustomersQuantity {
+		if len(customersByCustomerSuccess) == 1 { // there is only one customer success
+			return customerSuccessID
+		} else if customersQuantity != 0 && customersQuantity == greatestCustomersQuantity {
+			busiestCustomerID = 0 // draw
+		} else if customersQuantity > greatestCustomersQuantity {
 			greatestCustomersQuantity = customersQuantity
 			busiestCustomerID = customerSuccessID
 		}
+
 	}
 
 	return busiestCustomerID
@@ -75,16 +109,32 @@ func FindBusiestCustomerSuccess(customersByCustomerSuccess map[int]int) int {
 // FindAvailableCustomerSuccess retrieves all available customerSuccess given a list of customerSuccess away
 func FindAvailableCustomerSuccess(customerSuccess []Entity, customerSuccessAwayIDs []int) []Entity {
 
+	if len(customerSuccessAwayIDs) == 0 { // no customer success is away
+		return customerSuccess
+	}
+
 	var availableCustomerSuccess []Entity
 
-	for _, customerSuccessAwayID := range customerSuccessAwayIDs {
-		for _, customerSuccessToBeChecked := range customerSuccess {
-			if customerSuccessToBeChecked.ID != customerSuccessAwayID {
-				availableCustomerSuccess = append(availableCustomerSuccess, customerSuccessToBeChecked)
-			}
+	for _, customerSuccessToBeChecked := range customerSuccess {
+
+		if !ContainsInt(customerSuccessToBeChecked.ID, customerSuccessAwayIDs) {
+			availableCustomerSuccess = append(availableCustomerSuccess, customerSuccessToBeChecked)
+		}
+
+	}
+
+	return availableCustomerSuccess
+}
+
+//ContainsInt checks whether a array of integers contains a given int
+func ContainsInt(number int, numbers []int) bool {
+	for _, currentNumber := range numbers {
+
+		if number == currentNumber {
+			return true
 		}
 	}
-	return availableCustomerSuccess
+	return false
 }
 
 // SortEntitiesByScoreDesc sorts Entities descending by their IDs
